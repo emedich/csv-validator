@@ -90,6 +90,99 @@ export function validateState(value) {
   return null;
 }
 
+export function validateEmail(email, firstName, lastName, websiteDomain) {
+  if (!email) return null;
+  const emailLower = String(email).trim().toLowerCase();
+  const errors = [];
+
+  // Basic email format validation
+  if (!emailLower.includes('@') || !emailLower.includes('.')) {
+    return 'Invalid email format';
+  }
+
+  const [localPart, domain] = emailLower.split('@');
+  if (!localPart || !domain) {
+    return 'Invalid email format';
+  }
+
+  const firstNameLower = String(firstName || '').trim().toLowerCase();
+  const lastNameLower = String(lastName || '').trim().toLowerCase();
+  const firstInitial = firstNameLower.charAt(0);
+
+  // Remove separators for comparison
+  const localPartClean = localPart.replace(/[._-]/g, '');
+
+  // Check if name is valid in email
+  const validNamePatterns = [
+    // Only last name
+    lastNameLower,
+    // Only first name
+    firstNameLower,
+    // Only first initial
+    firstInitial,
+    // First initial + last name
+    firstInitial + lastNameLower,
+    // Last name + first initial
+    lastNameLower + firstInitial,
+    // First name + last name
+    firstNameLower + lastNameLower,
+    // Last name + first name
+    lastNameLower + firstNameLower,
+  ];
+
+  const nameIsValid = validNamePatterns.some((pattern) => localPartClean === pattern);
+
+  if (!nameIsValid) {
+    errors.push('Email name does not match first/last name');
+  }
+
+  // Validate domain
+  if (websiteDomain) {
+    const websiteDomainLower = String(websiteDomain).trim().toLowerCase();
+    const isValidDomain = validateEmailDomain(domain, websiteDomainLower, lastNameLower);
+    if (!isValidDomain) {
+      errors.push('Email domain does not match website domain');
+    }
+  }
+
+  return errors.length > 0 ? errors.join('; ') : null;
+}
+
+function validateEmailDomain(emailDomain, websiteDomain, lastName) {
+  // Extract base domain from website (remove www, subdomains, and anything after .com)
+  const websiteBaseDomain = extractBaseDomain(websiteDomain);
+
+  // Check if email domain matches company domain (with or without subdomains)
+  if (emailDomain === websiteBaseDomain || emailDomain.endsWith('.' + websiteBaseDomain)) {
+    return true;
+  }
+
+  // Check if it's company name + public email provider
+  const publicProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com', 'protonmail.com'];
+  const companyNameInEmail = emailDomain.split('.')[0];
+
+  if (publicProviders.includes(emailDomain)) {
+    // Allow company name + public provider (e.g., acme@gmail.com)
+    return true;
+  }
+
+  return false;
+}
+
+function extractBaseDomain(domain) {
+  // Remove www and any subdomains, keep only base domain + TLD
+  let cleaned = domain.replace(/^www\./, '');
+  
+  // Split by dots and get the last two parts (domain + TLD)
+  const parts = cleaned.split('.');
+  if (parts.length >= 2) {
+    // Get last two parts (e.g., 'company.com')
+    return parts.slice(-2).join('.');
+  }
+  
+  return cleaned;
+}
+
 export function validateCsvData(data, headers) {
   const columnMap = {};
   for (const header of headers) {
@@ -99,8 +192,11 @@ export function validateCsvData(data, headers) {
 
   const companyCol = columnMap['companyname'];
   const lastNameCol = columnMap['executivelastname'];
+  const firstNameCol = columnMap['executivefirstname'];
   const titleCol = columnMap['executivetitle'];
   const stateCol = columnMap['state'];
+  const emailCol = columnMap['email'];
+  const websiteCol = columnMap['website'];
 
   const errors = [];
   let errorRowCount = 0;
@@ -138,6 +234,19 @@ export function validateCsvData(data, headers) {
       const error = validateState(row[stateCol]);
       if (error) {
         rowErrors.push(`${stateCol}: ${error}`);
+        rowHasError = true;
+      }
+    }
+
+    if (emailCol) {
+      const error = validateEmail(
+        row[emailCol],
+        firstNameCol ? row[firstNameCol] : '',
+        lastNameCol ? row[lastNameCol] : '',
+        websiteCol ? row[websiteCol] : ''
+      );
+      if (error) {
+        rowErrors.push(`${emailCol}: ${error}`);
         rowHasError = true;
       }
     }
