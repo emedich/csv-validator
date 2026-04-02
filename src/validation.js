@@ -149,7 +149,7 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
     const websiteDomainLower = String(websiteDomain).trim().toLowerCase();
     const isValidDomain = validateEmailDomain(domain, websiteDomainLower, lastNameLower);
     if (!isValidDomain) {
-      errors.push('Email domain does not match website domain');
+      errors.push('Email domain and website do not match, please check that these are both correct');
     }
   }
 
