@@ -344,10 +344,11 @@ export default function App() {
           <div style={styles.infoBox}>
             <h3 style={styles.infoTitle}>Validation Rules</h3>
             <div style={styles.infoList}>
-              <div>✓ Company Name: Inc., LLC, Co., Corp. formatting</div>
+              <div>✓ Company Name: Inc., LLC, Co., Corp., Ltd. formatting</div>
               <div>✓ Last Name: No suffixes (Jr, Sr, II, III, IV)</div>
               <div>✓ Title: CEO, President, or Owner only</div>
               <div>✓ State: Exactly 2 letters</div>
+              <div>✓ Email: Name & domain matching</div>
             </div>
           </div>
 
