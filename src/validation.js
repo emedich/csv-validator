@@ -109,6 +109,13 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
   const lastNameLower = String(lastName || '').trim().toLowerCase();
   const firstInitial = firstNameLower.charAt(0);
 
+  // Check for generic email prefixes
+  const genericPrefixes = ['info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team'];
+  const isGenericPrefix = genericPrefixes.includes(localPart);
+  if (isGenericPrefix) {
+    errors.push('Please make sure that there are no options for the contact name to be used here before defaulting to ' + localPart + '@');
+  }
+
   // Remove separators for comparison
   const localPartClean = localPart.replace(/[._-]/g, '');
 
@@ -132,7 +139,8 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
 
   const nameIsValid = validNamePatterns.some((pattern) => localPartClean === pattern);
 
-  if (!nameIsValid) {
+  // Only check name validity if it's not a generic prefix (already flagged above)
+  if (!nameIsValid && !isGenericPrefix) {
     errors.push('Email name does not match first/last name');
   }
 
