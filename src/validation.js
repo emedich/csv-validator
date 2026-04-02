@@ -38,6 +38,13 @@ export function validateCompanyName(value) {
     }
   }
 
+  // Check for "Ltd" variations
+  if (/\bLtd\b/i.test(val) || /\bLimited\b/i.test(val)) {
+    if (!/,\s*Ltd\./.test(val)) {
+      errors.push('Must use ", Ltd." (with comma and period)');
+    }
+  }
+
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
