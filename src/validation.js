@@ -178,8 +178,14 @@ function validateEmailDomain(emailDomain, websiteDomain, lastName) {
 }
 
 function extractBaseDomain(domain) {
+  // Remove protocol (http://, https://)
+  let cleaned = domain.replace(/^https?:\/\//, '');
+  
   // Remove www and any subdomains, keep only base domain + TLD
-  let cleaned = domain.replace(/^www\./, '');
+  cleaned = cleaned.replace(/^www\./, '');
+  
+  // Remove trailing slashes and paths
+  cleaned = cleaned.split('/')[0];
   
   // Split by dots and get the last two parts (domain + TLD)
   const parts = cleaned.split('.');
