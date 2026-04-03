@@ -25,14 +25,14 @@ export function validateCompanyName(value) {
       errors.push('Must use ", LLC" (with comma)');
     }
   }
-  // Check for "Co" or "Company" at the end of company name
-  if (/\b(Co|Company)\b/i.test(val)) {
-    // Check if it's at the end
-    if (/\b(Co|Company)\s*$/i.test(val)) {
-      errors.push('Must use "Co." (with period) - not "Co" or "Company"');
-    } else if (!/,\s*Co\./.test(val) && !/\bCo\./.test(val)) {
-      errors.push('Must use "Co." (with period)');
-    }
+  // Check for "Co" or "Company" ONLY at the end of company name
+  if (/\b(Co|Company)\s*$/i.test(val)) {
+    // Only flag if Co/Company is at the very end
+    errors.push('Must use "Co." (with period) - not "Co" or "Company"');
+  }
+  // Separately check for Co with proper formatting (with comma or period)
+  else if (/\bCo\b/i.test(val) && !/,\s*Co\./.test(val) && !/\bCo\./.test(val)) {
+    errors.push('Must use "Co." (with period)');
   }
 
   if (/\bCorp\b/i.test(val) && !/,\s*Corp\./.test(val)) {
