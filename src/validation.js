@@ -138,6 +138,10 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
     firstInitial + lastInitial,
     // Last initial + first initial
     lastInitial + firstInitial,
+    // First name + last initial
+    firstNameLower + lastInitial,
+    // Last initial + first name
+    lastInitial + firstNameLower,
     // First initial + last name
     firstInitial + lastNameClean,
     // Last name + first initial
