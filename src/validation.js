@@ -111,9 +111,8 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
   const firstNameLower = String(firstName || '').trim().toLowerCase();
   const lastNameLower = String(lastName || '').trim().toLowerCase();
   const firstInitial = firstNameLower.charAt(0);
-  
-  // Remove spaces from last name for email matching (e.g., "Di Vittorio" -> "divittorio")
   const lastNameClean = lastNameLower.replace(/\s+/g, '');
+  const lastInitial = lastNameClean.charAt(0);
 
   // Check for generic email prefixes
   const genericPrefixes = ['info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team'];
@@ -133,6 +132,12 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
     firstNameLower,
     // Only first initial
     firstInitial,
+    // Only last initial
+    lastInitial,
+    // First initial + last initial
+    firstInitial + lastInitial,
+    // Last initial + first initial
+    lastInitial + firstInitial,
     // First initial + last name
     firstInitial + lastNameClean,
     // Last name + first initial
