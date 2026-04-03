@@ -25,9 +25,12 @@ export function validateCompanyName(value) {
       errors.push('Must use ", LLC" (with comma)');
     }
   }
-
-  if (/\bCo\b/i.test(val) && !/,\s*Co\./.test(val)) {
-    if (!/\bCo\./.test(val)) {
+  // Check for "Co" or "Company" at the end of company name
+  if (/\b(Co|Company)\b/i.test(val)) {
+    // Check if it's at the end
+    if (/\b(Co|Company)\s*$/i.test(val)) {
+      errors.push('Must use "Co." (with period) - not "Co" or "Company"');
+    } else if (!/,\s*Co\./.test(val) && !/\bCo\./.test(val)) {
       errors.push('Must use "Co." (with period)');
     }
   }
@@ -90,7 +93,7 @@ export function validateState(value) {
   return null;
 }
 
-export function validateEmail(email, firstName, lastName, websiteDomain) {
+export function validateEmail(email, firstName, lastName, websiteDomain, companyName) {
   if (!email) return null;
   const emailLower = String(email).trim().toLowerCase();
   const errors = [];
@@ -108,6 +111,9 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
   const firstNameLower = String(firstName || '').trim().toLowerCase();
   const lastNameLower = String(lastName || '').trim().toLowerCase();
   const firstInitial = firstNameLower.charAt(0);
+  
+  // Remove spaces from last name for email matching (e.g., "Di Vittorio" -> "divittorio")
+  const lastNameClean = lastNameLower.replace(/\s+/g, '');
 
   // Check for generic email prefixes
   const genericPrefixes = ['info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team'];
@@ -122,19 +128,19 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
   // Check if name is valid in email
   const validNamePatterns = [
     // Only last name
-    lastNameLower,
+    lastNameClean,
     // Only first name
     firstNameLower,
     // Only first initial
     firstInitial,
     // First initial + last name
-    firstInitial + lastNameLower,
+    firstInitial + lastNameClean,
     // Last name + first initial
-    lastNameLower + firstInitial,
+    lastNameClean + firstInitial,
     // First name + last name
-    firstNameLower + lastNameLower,
+    firstNameLower + lastNameClean,
     // Last name + first name
-    lastNameLower + firstNameLower,
+    lastNameClean + firstNameLower,
   ];
 
   const nameIsValid = validNamePatterns.some((pattern) => localPartClean === pattern);
@@ -147,7 +153,7 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
   // Validate domain
   if (websiteDomain) {
     const websiteDomainLower = String(websiteDomain).trim().toLowerCase();
-    const isValidDomain = validateEmailDomain(domain, websiteDomainLower, lastNameLower);
+    const isValidDomain = validateEmailDomain(domain, websiteDomainLower, companyName);
     if (!isValidDomain) {
       errors.push('Email domain and website do not match, please check that these are both correct');
     }
@@ -156,22 +162,33 @@ export function validateEmail(email, firstName, lastName, websiteDomain) {
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
-function validateEmailDomain(emailDomain, websiteDomain, lastName) {
+function validateEmailDomain(emailDomain, websiteDomain, companyName) {
   // Extract base domain from website (remove www, subdomains, and anything after .com)
   const websiteBaseDomain = extractBaseDomain(websiteDomain);
+  const websiteBaseDomainName = websiteBaseDomain.split('.')[0]; // e.g., 'company' from 'company.com'
 
   // Check if email domain matches company domain (with or without subdomains)
   if (emailDomain === websiteBaseDomain || emailDomain.endsWith('.' + websiteBaseDomain)) {
     return true;
   }
 
+  // Check for partial domain match (e.g., 'townegroup.com' email with 'townellc.com' website)
+  const emailDomainName = emailDomain.split('.')[0]; // e.g., 'townegroup' from 'townegroup.com'
+  const websiteDomainNameOnly = websiteBaseDomainName; // e.g., 'townellc' from 'townellc.com'
+  
+  if (emailDomainName.length > 2 && websiteDomainNameOnly.length > 2) {
+    if (websiteDomainNameOnly.includes(emailDomainName) || emailDomainName.includes(websiteDomainNameOnly)) {
+      return true;
+    }
+  }
+
   // Check if it's company name + public email provider
   const publicProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com', 'protonmail.com'];
-  const companyNameInEmail = emailDomain.split('.')[0];
 
   if (publicProviders.includes(emailDomain)) {
-    // Allow company name + public provider (e.g., acme@gmail.com)
-    return true;
+    // For public email providers, check if local part matches company name or website domain
+    // This will be validated in the calling function by checking the local part
+    return false; // Will be flagged for verification
   }
 
   return false;
@@ -257,7 +274,8 @@ export function validateCsvData(data, headers) {
         row[emailCol],
         firstNameCol ? row[firstNameCol] : '',
         lastNameCol ? row[lastNameCol] : '',
-        websiteCol ? row[websiteCol] : ''
+        websiteCol ? row[websiteCol] : '',
+        companyCol ? row[companyCol] : ''
       );
       if (error) {
         rowErrors.push(`${emailCol}: ${error}`);
