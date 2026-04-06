@@ -190,6 +190,15 @@ function validateEmailDomain(emailDomain, websiteDomain, companyName) {
       return true;
     }
   }
+  
+  // Check for partial domain match after stripping generic suffixes
+  // e.g., 'townegroup' and 'townellc' both become 'towne' after stripping 'group' and 'llc'
+  const emailDomainStripped = stripGenericSuffixes(emailDomainName);
+  const websiteDomainStripped = stripGenericSuffixes(websiteDomainNameOnly);
+  
+  if (emailDomainStripped && websiteDomainStripped && emailDomainStripped === websiteDomainStripped) {
+    return true;
+  }
 
   // Check if it's company name + public email provider
   const publicProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com', 'protonmail.com'];
@@ -203,9 +212,26 @@ function validateEmailDomain(emailDomain, websiteDomain, companyName) {
   return false;
 }
 
+function stripGenericSuffixes(domainName) {
+  // List of generic suffixes to remove when comparing domain names
+  const suffixes = ['group', 'llc', 'company', 'corp', 'inc', 'ltd', 'solutions', 'services', 'consulting', 'partners', 'associates', 'holdings', 'ventures', 'capital'];
+  
+  let cleaned = domainName.toLowerCase();
+  
+  // Remove suffixes from the end
+  for (const suffix of suffixes) {
+    if (cleaned.endsWith(suffix)) {
+      cleaned = cleaned.substring(0, cleaned.length - suffix.length).trim();
+      break; // Only remove one suffix
+    }
+  }
+  
+  return cleaned;
+}
+
 function extractBaseDomain(domain) {
   // Remove protocol (http://, https://)
-  let cleaned = domain.replace(/^https?:\/\//, '');
+  let cleaned = domain.replace(/^https?:\/\//,  '');
   
   // Remove www and any subdomains, keep only base domain + TLD
   cleaned = cleaned.replace(/^www\./, '');
