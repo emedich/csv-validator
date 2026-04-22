@@ -98,12 +98,15 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
   const emailLower = String(email).trim().toLowerCase();
   const errors = [];
 
-  // Basic email format validation
-  if (!emailLower.includes('@') || !emailLower.includes('.')) {
+  // Basic email format validation — must contain exactly one '@' and at least one '.'
+  const atCount = (emailLower.match(/@/g) || []).length;
+  if (atCount !== 1 || !emailLower.includes('.')) {
     return 'Invalid email format';
   }
 
-  const [localPart, domain] = emailLower.split('@');
+  const atIndex = emailLower.indexOf('@');
+  const localPart = emailLower.substring(0, atIndex);
+  const domain = emailLower.substring(atIndex + 1);
   if (!localPart || !domain) {
     return 'Invalid email format';
   }
@@ -111,18 +114,21 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
   const firstNameLower = String(firstName || '').trim().toLowerCase();
   const lastNameLower = String(lastName || '').trim().toLowerCase();
   const firstInitial = firstNameLower.charAt(0);
-  const lastNameClean = lastNameLower.replace(/\s+/g, '');
+  // Strip spaces, hyphens, and apostrophes from last name for comparison
+  const lastNameClean = lastNameLower.replace(/[\s\-']/g, '');
   const lastInitial = lastNameClean.charAt(0);
 
   // Check for generic email prefixes
   const genericPrefixes = ['info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team'];
-  const isGenericPrefix = genericPrefixes.includes(localPart);
+  // Strip the + alias suffix (e.g. "john+work" → "john") before checking generic prefix
+  const localPartBase = localPart.split('+')[0];
+  const isGenericPrefix = genericPrefixes.includes(localPartBase);
   if (isGenericPrefix) {
-    errors.push('Please make sure that there are no options for the contact name to be used here before defaulting to ' + localPart + '@');
+    errors.push('Please make sure that there are no options for the contact name to be used here before defaulting to ' + localPartBase + '@');
   }
 
-  // Remove separators for comparison
-  const localPartClean = localPart.replace(/[._-]/g, '');
+  // Remove separators and + alias for name comparison
+  const localPartClean = localPartBase.replace(/[._-]/g, '');
 
   // Check if name is valid in email
   const validNamePatterns = [
@@ -152,7 +158,11 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
     lastNameClean + firstNameLower,
   ];
 
-  const nameIsValid = validNamePatterns.some((pattern) => localPartClean === pattern);
+  // Also accept patterns where the local part merely *starts with* a valid name pattern
+  // (handles number suffixes like jsmith2 → matches "jsmith")
+  const nameIsValid = validNamePatterns.some(
+    (pattern) => pattern && (localPartClean === pattern || localPartClean.startsWith(pattern))
+  );
 
   // Only check name validity if it's not a generic prefix (already flagged above)
   if (!nameIsValid && !isGenericPrefix) {
