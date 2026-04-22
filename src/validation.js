@@ -266,13 +266,14 @@ export function validateCsvData(data, headers) {
     columnMap[normalized] = header;
   }
 
-  const companyCol = columnMap['companyname'];
-  const lastNameCol = columnMap['executivelastname'];
-  const firstNameCol = columnMap['executivefirstname'];
-  const titleCol = columnMap['executivetitle'];
-  const stateCol = columnMap['state'];
-  const emailCol = columnMap['email'];
-  const websiteCol = columnMap['website'];
+  // Accept multiple column name variations for each field
+  const companyCol   = columnMap['companyname']   || columnMap['company'];
+  const lastNameCol  = columnMap['executivelastname']  || columnMap['lastname']  || columnMap['last name'] || columnMap['contactlastname'];
+  const firstNameCol = columnMap['executivefirstname'] || columnMap['firstname'] || columnMap['first name'] || columnMap['contactfirstname'];
+  const titleCol     = columnMap['executivetitle'] || columnMap['title'];
+  const stateCol     = columnMap['state'];
+  const emailCol     = columnMap['email'];
+  const websiteCol   = columnMap['website'];
 
   const errors = [];
   let errorRowCount = 0;
