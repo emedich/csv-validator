@@ -359,7 +359,8 @@ export function generateCsvContent(data, headers, validationResult) {
 
     const csvRow = values
       .map((val) => {
-        const strVal = String(val);
+        // Strip BOM and other invisible Unicode control characters from cell values
+        const strVal = String(val).replace(/^\uFEFF/, '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
         if (strVal.includes(',') || strVal.includes('"') || strVal.includes('\n')) {
           return `"${strVal.replace(/"/g, '""')}"`;
         }

@@ -24,7 +24,8 @@ export default function App() {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const csv = e.target.result;
+        // Strip UTF-8 BOM (\uFEFF) if present — Excel-exported CSVs often include it
+        const csv = e.target.result.replace(/^\uFEFF/, '');
         Papa.parse(csv, {
           header: true,
           skipEmptyLines: true,
