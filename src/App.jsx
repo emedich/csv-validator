@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Download, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, Download, CheckCircle, AlertCircle, Loader2, Info } from 'lucide-react';
 import Papa from 'papaparse';
-import { validateCsvData, generateCsvContent } from './validation';
+import { validateCsvData, generateCsvContent, CALDER_INDUSTRIES } from './validation';
 
 export default function App() {
   const [isDragging, setIsDragging] = useState(false);
@@ -10,7 +10,37 @@ export default function App() {
   const [csvData, setCsvData] = useState(null);
   const [csvHeaders, setCsvHeaders] = useState(null);
   const [fileName, setFileName] = useState(null);
+
+  // Calder Industry mode — ON by default
+  const [calderMode, setCalderMode] = useState(true);
+  const [showCalderWarning, setShowCalderWarning] = useState(false);
+
   const fileInputRef = useRef(null);
+
+  const handleCalderToggle = () => {
+    if (calderMode) {
+      // User is trying to turn it OFF — show warning first
+      setShowCalderWarning(true);
+    } else {
+      // Turning back ON — no warning needed
+      setCalderMode(true);
+      setShowCalderWarning(false);
+    }
+  };
+
+  const confirmDisableCalder = () => {
+    setCalderMode(false);
+    setShowCalderWarning(false);
+    // Re-run validation if a file is already loaded
+    if (csvData && csvHeaders) {
+      const result = validateCsvData(csvData, csvHeaders, false);
+      setValidationResult(result);
+    }
+  };
+
+  const cancelDisableCalder = () => {
+    setShowCalderWarning(false);
+  };
 
   const handleFileSelect = (file) => {
     if (!file.name.endsWith('.csv')) {
@@ -42,7 +72,7 @@ export default function App() {
             setCsvHeaders(headers);
             setCsvData(data);
 
-            const result = validateCsvData(data, headers);
+            const result = validateCsvData(data, headers, calderMode);
             setValidationResult(result);
             setIsProcessing(false);
           },
@@ -111,8 +141,14 @@ export default function App() {
       margin: '0 auto',
     },
     header: {
-      marginBottom: '32px',
+      marginBottom: '24px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: '24px',
+      flexWrap: 'wrap',
     },
+    headerText: {},
     title: {
       fontSize: '36px',
       fontWeight: 'bold',
@@ -122,6 +158,130 @@ export default function App() {
     subtitle: {
       color: '#4b5563',
     },
+    // ── Calder Industry toggle panel ──
+    calderPanel: {
+      background: calderMode ? '#eff6ff' : '#f9fafb',
+      border: `1.5px solid ${calderMode ? '#3b82f6' : '#d1d5db'}`,
+      borderRadius: '10px',
+      padding: '14px 18px',
+      minWidth: '220px',
+      maxWidth: '280px',
+      flexShrink: 0,
+    },
+    calderPanelTitle: {
+      fontWeight: '700',
+      fontSize: '13px',
+      color: '#1e3a5f',
+      marginBottom: '6px',
+      letterSpacing: '0.03em',
+      textTransform: 'uppercase',
+    },
+    calderToggleRow: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+    },
+    toggleTrack: {
+      position: 'relative',
+      width: '44px',
+      height: '24px',
+      borderRadius: '12px',
+      background: calderMode ? '#2563eb' : '#d1d5db',
+      cursor: 'pointer',
+      transition: 'background 0.2s',
+      flexShrink: 0,
+      border: 'none',
+      outline: 'none',
+    },
+    toggleThumb: {
+      position: 'absolute',
+      top: '3px',
+      left: calderMode ? '23px' : '3px',
+      width: '18px',
+      height: '18px',
+      borderRadius: '50%',
+      background: 'white',
+      transition: 'left 0.2s',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+    },
+    calderLabel: {
+      fontSize: '14px',
+      fontWeight: '600',
+      color: calderMode ? '#1d4ed8' : '#6b7280',
+    },
+    calderNote: {
+      marginTop: '8px',
+      fontSize: '12px',
+      color: '#4b5563',
+      lineHeight: '1.5',
+    },
+    // ── Warning modal overlay ──
+    overlay: {
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.45)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '24px',
+    },
+    modal: {
+      background: 'white',
+      borderRadius: '12px',
+      padding: '28px',
+      maxWidth: '440px',
+      width: '100%',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+    },
+    modalIcon: {
+      width: '40px',
+      height: '40px',
+      color: '#d97706',
+      marginBottom: '12px',
+    },
+    modalTitle: {
+      fontSize: '18px',
+      fontWeight: '700',
+      color: '#111827',
+      marginBottom: '10px',
+    },
+    modalBody: {
+      fontSize: '14px',
+      color: '#374151',
+      lineHeight: '1.6',
+      marginBottom: '20px',
+      background: '#fffbeb',
+      border: '1px solid #fcd34d',
+      borderRadius: '8px',
+      padding: '12px 14px',
+    },
+    modalButtons: {
+      display: 'flex',
+      gap: '10px',
+      justifyContent: 'flex-end',
+    },
+    btnCancel: {
+      padding: '9px 18px',
+      background: '#f3f4f6',
+      color: '#374151',
+      border: '1px solid #d1d5db',
+      borderRadius: '7px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      fontSize: '14px',
+    },
+    btnConfirm: {
+      padding: '9px 18px',
+      background: '#dc2626',
+      color: 'white',
+      border: 'none',
+      borderRadius: '7px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      fontSize: '14px',
+    },
+    // ── Upload card ──
     card: {
       background: 'white',
       borderRadius: '8px',
@@ -167,9 +327,6 @@ export default function App() {
       fontWeight: '600',
       cursor: 'pointer',
       transition: 'background 0.3s',
-    },
-    buttonHover: {
-      background: '#1d4ed8',
     },
     resultBox: {
       marginTop: '32px',
@@ -259,11 +416,59 @@ export default function App() {
   return (
     <div style={styles.container}>
       <div style={styles.maxWidth}>
+
+        {/* ── Header row with title + Calder toggle ── */}
         <div style={styles.header}>
-          <h1 style={styles.title}>CSV Validator</h1>
-          <p style={styles.subtitle}>Free online tool to validate and correct your CSV files</p>
+          <div style={styles.headerText}>
+            <h1 style={styles.title}>CSV Validator</h1>
+            <p style={styles.subtitle}>Free online tool to validate and correct your CSV files</p>
+          </div>
+
+          {/* Calder Industry toggle panel */}
+          <div style={styles.calderPanel}>
+            <div style={styles.calderPanelTitle}>Calder Industry</div>
+            <div style={styles.calderToggleRow}>
+              <button
+                onClick={handleCalderToggle}
+                style={styles.toggleTrack}
+                aria-label="Toggle Calder Industry validation"
+              >
+                <div style={styles.toggleThumb} />
+              </button>
+              <span style={styles.calderLabel}>
+                {calderMode ? 'Validation ON' : 'Validation OFF'}
+              </span>
+            </div>
+            <p style={styles.calderNote}>
+              {calderMode
+                ? 'Calder Industry field will be validated and auto-corrected.'
+                : 'Calder Industry field will not be checked.'}
+            </p>
+          </div>
         </div>
 
+        {/* ── Warning modal ── */}
+        {showCalderWarning && (
+          <div style={styles.overlay}>
+            <div style={styles.modal}>
+              <AlertCircle style={styles.modalIcon} />
+              <div style={styles.modalTitle}>Disable Calder Industry Validation?</div>
+              <div style={styles.modalBody}>
+                Calder Industry field is required for all Seller Prospecting lists. This helps us identify which client launch emails they will be receiving.
+              </div>
+              <div style={styles.modalButtons}>
+                <button style={styles.btnCancel} onClick={cancelDisableCalder}>
+                  Keep Enabled
+                </button>
+                <button style={styles.btnConfirm} onClick={confirmDisableCalder}>
+                  Disable Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Upload card ── */}
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Upload CSV File</h2>
 
@@ -310,6 +515,7 @@ export default function App() {
                     <div style={styles.resultTitle}>Validation Complete</div>
                     <p style={styles.resultStats}>
                       {validationResult.totalRows} rows • {validationResult.errorRows} errors
+                      {calderMode && ' • Calder Industry validated'}
                     </p>
                     <button
                       onClick={handleDownload}
@@ -341,6 +547,7 @@ export default function App() {
           )}
         </div>
 
+        {/* ── Info cards ── */}
         <div style={styles.infoGrid}>
           <div style={styles.infoBox}>
             <h3 style={styles.infoTitle}>Validation Rules</h3>
@@ -349,20 +556,36 @@ export default function App() {
               <div>✓ Last Name: No suffixes (Jr, Sr, II, III, IV)</div>
               <div>✓ Title: CEO, President, or Owner only</div>
               <div>✓ State: Exactly 2 letters</div>
-              <div>✓ Email: Name & domain matching</div>
+              <div>✓ Email: Name &amp; domain matching</div>
+              {calderMode && (
+                <div style={{ color: '#1d4ed8', fontWeight: '500' }}>
+                  ✓ Calder Industry: Must match approved list (auto-corrected when close)
+                </div>
+              )}
             </div>
           </div>
 
           <div style={styles.infoBox}>
-            <h3 style={styles.infoTitle}>How It Works</h3>
+            <h3 style={styles.infoTitle}>
+              {calderMode ? 'Calder Industry Categories' : 'How It Works'}
+            </h3>
             <div style={styles.infoList}>
-              <div>1. Upload your CSV file</div>
-              <div>2. We validate against all rules</div>
-              <div>3. Download with Issues column</div>
-              <div>4. Fix errors and re-validate</div>
+              {calderMode
+                ? CALDER_INDUSTRIES.map((ind) => (
+                    <div key={ind}>· {ind}</div>
+                  ))
+                : (
+                  <>
+                    <div>1. Upload your CSV file</div>
+                    <div>2. We validate against all rules</div>
+                    <div>3. Download with Issues column</div>
+                    <div>4. Fix errors and re-validate</div>
+                  </>
+                )}
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
