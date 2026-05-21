@@ -141,6 +141,16 @@ export function validateCompanyName(value) {
     }
   }
 
+  // Check for "dba" (case-insensitive, with or without dots)
+  if (/\bd\.?b\.?a\.?\b/i.test(val)) {
+    errors.push('Should not contain "dba" or nicknames');
+  }
+
+  // Check for parentheses (XXX)
+  if (/\(.*\)/.test(val)) {
+    errors.push('Should not contain parentheses or nicknames');
+  }
+
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
