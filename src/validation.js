@@ -445,6 +445,7 @@ export function validateCsvData(data, headers, calderMode = true) {
   if (!firstNameCol) missingColumns.push('First Name');
   if (!lastNameCol) missingColumns.push('Last Name');
   if (!emailCol) missingColumns.push('Email');
+  if (!stateCol) missingColumns.push('State');
   if (calderMode && !industryCol) missingColumns.push('Calder Industry');
 
   return {
