@@ -128,8 +128,8 @@ export function validateCompanyName(value) {
     errors.push('Must use "Co." (with period)');
   }
 
-  if (/\bCorp\b/i.test(val) && !/,\s*Corp\./.test(val)) {
-    if (!/\bCorp\./.test(val)) {
+  if (/\b(Corp|Corporation)\b/i.test(val)) {
+    if (!/,\s*Corp\./.test(val) && !/\bCorp\./.test(val)) {
       errors.push('Must use "Corp." (with period)');
     }
   }
