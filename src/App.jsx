@@ -530,6 +530,21 @@ export default function App() {
                 </div>
               </div>
 
+              {validationResult.missingColumns && validationResult.missingColumns.length > 0 && (
+                <div style={{ ...styles.errorBox, background: '#fee2e2', borderColor: '#f87171' }}>
+                  <AlertCircle style={{ ...styles.errorIcon, color: '#dc2626' }} />
+                  <div>
+                    <p style={{ fontWeight: '700', color: '#991b1b' }}>
+                      Missing Required Columns
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#b91c1c', marginTop: '4px' }}>
+                      The following columns were not found: <strong>{validationResult.missingColumns.join(', ')}</strong>. 
+                      Validation for these fields was skipped.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {validationResult.errorRows > 0 && (
                 <div style={styles.errorBox}>
                   <AlertCircle style={styles.errorIcon} />

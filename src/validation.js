@@ -441,12 +441,19 @@ export function validateCsvData(data, headers, calderMode = true) {
     }
   });
 
+  const missingColumns = [];
+  if (!firstNameCol) missingColumns.push('First Name');
+  if (!lastNameCol) missingColumns.push('Last Name');
+  if (!emailCol) missingColumns.push('Email');
+  if (calderMode && !industryCol) missingColumns.push('Calder Industry');
+
   return {
     totalRows: data.length,
     errorRows: errorRowCount,
     errors,
     corrections,
     industryCol,
+    missingColumns,
   };
 }
 
