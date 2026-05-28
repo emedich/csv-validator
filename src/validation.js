@@ -230,7 +230,10 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
   const lastInitial = lastNameClean.charAt(0);
 
   // Check for generic email prefixes
-  const genericPrefixes = ['info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team'];
+  const genericPrefixes = [
+    'info', 'support', 'contact', 'hello', 'noreply', 'admin', 'sales', 'help', 'service', 'team',
+    'office', 'mail', 'jobs', 'careers', 'marketing', 'inquiry', 'queries', 'billing', 'account', 'reception'
+  ];
   // Strip the + alias suffix (e.g. "john+work" → "john") before checking generic prefix
   const localPartBase = localPart.split('+')[0];
   const isGenericPrefix = genericPrefixes.includes(localPartBase);
@@ -355,7 +358,7 @@ export function validateCsvData(data, headers, calderMode = true) {
   const firstNameCol   = columnMap['executivefirstname'] || columnMap['firstname'] || columnMap['first name'] || columnMap['contactfirstname'];
   const titleCol       = columnMap['executivetitle'] || columnMap['title'];
   const stateCol       = columnMap['state'];
-  const emailCol       = columnMap['email'];
+  const emailCol       = columnMap['email'] || columnMap['emailaddress'] || columnMap['executiveemail'] || columnMap['contactemail'];
   const websiteCol     = columnMap['website'];
   const industryCol    = columnMap['calderindustry'] || columnMap['industry'];
 
