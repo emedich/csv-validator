@@ -260,11 +260,18 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
     lastNameClean + firstNameLower,
   ];
 
-  // Also accept patterns where the local part merely *starts with* a valid name pattern
+  // Also accept patterns where the local part matches a name pattern + optional numbers
   // (handles number suffixes like jsmith2 → matches "jsmith")
-  const nameIsValid = validNamePatterns.some(
-    (pattern) => pattern && (localPartClean === pattern || localPartClean.startsWith(pattern))
-  );
+  const nameIsValid = validNamePatterns.some((pattern) => {
+    if (!pattern) return false;
+    if (localPartClean === pattern) return true;
+    // If it starts with the pattern, the rest MUST be only numbers
+    if (localPartClean.startsWith(pattern)) {
+      const suffix = localPartClean.substring(pattern.length);
+      return suffix.length > 0 && /^\d+$/.test(suffix);
+    }
+    return false;
+  });
 
   // Only check name validity if it's not a generic prefix (already flagged above)
   if (!nameIsValid && !isGenericPrefix) {
@@ -358,7 +365,13 @@ export function validateCsvData(data, headers, calderMode = true) {
   const firstNameCol   = columnMap['executivefirstname'] || columnMap['firstname'] || columnMap['first name'] || columnMap['contactfirstname'];
   const titleCol       = columnMap['executivetitle'] || columnMap['title'];
   const stateCol       = columnMap['state'];
-  const emailCol       = columnMap['email'] || columnMap['emailaddress'] || columnMap['executiveemail'] || columnMap['contactemail'];
+  let emailCol = columnMap['email'] || columnMap['emailaddress'] || columnMap['executiveemail'] || columnMap['contactemail'];
+  
+  // Catch-all: if no specific email column found, look for any column that contains "email"
+  if (!emailCol) {
+    const fallback = Object.keys(columnMap).find(key => key.includes('email'));
+    if (fallback) emailCol = columnMap[fallback];
+  }
   const websiteCol     = columnMap['website'];
   const industryCol    = columnMap['calderindustry'] || columnMap['industry'];
 
