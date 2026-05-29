@@ -156,10 +156,26 @@ export function validateCompanyName(value) {
 
 // ─── Last Name ────────────────────────────────────────────────────────────────
 
+export function validateFirstName(value) {
+  if (!value) return null;
+  const val = String(value).trim();
+  const errors = [];
+
+  if (val.length > 0 && val[0] !== val[0].toUpperCase()) {
+    errors.push('Must start with a capitalized letter');
+  }
+
+  return errors.length > 0 ? errors.join('; ') : null;
+}
+
 export function validateLastName(value) {
   if (!value) return null;
   const val = String(value).trim();
   const errors = [];
+
+  if (val.length > 0 && val[0] !== val[0].toUpperCase()) {
+    errors.push('Must start with a capitalized letter');
+  }
 
   if (val.length <= 1) {
     errors.push('Must be more than one letter');
@@ -390,6 +406,14 @@ export function validateCsvData(data, headers, calderMode = true) {
       const error = validateCompanyName(row[companyCol]);
       if (error) {
         rowErrors.push(`${companyCol}: ${error}`);
+        rowHasError = true;
+      }
+    }
+
+    if (firstNameCol) {
+      const error = validateFirstName(row[firstNameCol]);
+      if (error) {
+        rowErrors.push(`${firstNameCol}: ${error}`);
         rowHasError = true;
       }
     }
