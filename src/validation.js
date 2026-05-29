@@ -181,6 +181,11 @@ export function validateLastName(value) {
     errors.push('Must be more than one letter');
   }
 
+  // Check for "Mc" prefix capitalization checkpoint
+  if (val.startsWith('Mc') && val.length > 2 && val[2] !== val[2].toUpperCase()) {
+    errors.push('Checkpoint: Names starting with "Mc" usually have the third letter capitalized (e.g., McDonald)');
+  }
+
   const forbiddenSuffixes = ['Jr', 'Sr', 'Jr.', 'Sr.', 'II', 'III', 'IV'];
   for (const suffix of forbiddenSuffixes) {
     if (new RegExp(`\\b${suffix}\\b`).test(val)) {
