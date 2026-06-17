@@ -98,20 +98,29 @@ export function strategicAutoFix(row, headers, columnMap) {
     }
 
     // Auto-format suffixes
-    val = val.replace(/\bInc\b(?!.)/i, ', Inc.');
+    // Handle "Inc" at the end specifically
+    val = val.replace(/\s+Inc\.?$/i, ', Inc.');
     val = val.replace(/\bIncorporated\b/i, ', Inc.');
+    
     val = val.replace(/\bLLC\b/i, ', LLC');
     val = val.replace(/\bPLLC\b/i, ', PLLC');
     val = val.replace(/\bPLC\b/i, ', PLC');
     val = val.replace(/\bPC\b/i, ', PC');
-    val = val.replace(/\b(Co|Company)\b$/i, 'Co.');
+    
+    // Only change Co/Company if it's at the very end
+    val = val.replace(/\s+(Co|Company)\.?$/i, ' Co.');
+    
     val = val.replace(/\bCorporation\b/i, 'Corp.');
-    val = val.replace(/\bCorp\b(?!.)/i, 'Corp.');
-    val = val.replace(/\bLtd\b(?!.)/i, ', Ltd.');
+    val = val.replace(/\bCorp\b\.?$/i, 'Corp.');
+    val = val.replace(/\bLtd\b\.?$/i, ', Ltd.');
     val = val.replace(/\bLimited\b/i, ', Ltd.');
 
     // Clean up double commas or spaces
-    val = val.replace(/,\s*,/g, ',').replace(/\s+/g, ' ').replace(/,\s*$/, '').trim();
+    val = val.replace(/,\s*,/g, ',')
+             .replace(/,\s+Co\./g, ' Co.') // Beckerle Lumber Supply Co, Inc. -> Beckerle Lumber Supply Co., Inc.
+             .replace(/\s+/g, ' ')
+             .replace(/,\s*$/, '')
+             .trim();
     
     correctedRow[companyCol] = val;
   }
@@ -127,6 +136,12 @@ export function strategicAutoFix(row, headers, columnMap) {
     }
     // Always capitalize (Proper Case)
     if (val.length > 0) val = toProperCase(val);
+    
+    // Auto-correct "Mc" prefix capitalization
+    if (val.startsWith('Mc') && val.length > 2) {
+      val = 'Mc' + val[2].toUpperCase() + val.substring(3).toLowerCase();
+    }
+    
     correctedRow[lastNameCol] = val;
   }
 
