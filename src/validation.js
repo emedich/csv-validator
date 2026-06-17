@@ -252,8 +252,18 @@ export function validateLastName(value) {
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
-export function validateTitle(value) {
-  // Titles are no longer flagged for specific values
+export function validateTitle(value, mode = 'calder') {
+  if (!value) return null;
+  const val = String(value).trim();
+  
+  // In Strategic Mode, we don't flag titles as errors
+  if (mode === 'strategic') return null;
+
+  const validTitles = ['CEO', 'President', 'Owner'];
+  if (!validTitles.includes(val)) {
+    return `Must be exactly one of: ${validTitles.join(', ')}`;
+  }
+
   return null;
 }
 
@@ -394,7 +404,7 @@ export function validateCsvData(data, headers, mode = 'calder') {
       if (error) { rowErrors.push(`${lastNameCol}: ${error}`); rowHasError = true; }
     }
     if (titleCol) {
-      const error = validateTitle(currentRow[titleCol]);
+      const error = validateTitle(currentRow[titleCol], mode);
       if (error) { rowErrors.push(`${titleCol}: ${error}`); rowHasError = true; }
     }
     if (stateCol) {
