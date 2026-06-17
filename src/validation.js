@@ -119,6 +119,24 @@ export function validateCompanyName(value) {
       errors.push('Must use ", LLC" (with comma)');
     }
   }
+
+  if (/\bPLLC\b/i.test(val) || /\bP\.L\.L\.C\.\b/i.test(val)) {
+    if (!/,\s*PLLC/.test(val)) {
+      errors.push('Must use ", PLLC" (with comma)');
+    }
+  }
+
+  if (/\bPLC\b/i.test(val) || /\bP\.L\.C\.\b/i.test(val)) {
+    if (!/,\s*PLC/.test(val)) {
+      errors.push('Must use ", PLC" (with comma)');
+    }
+  }
+
+  if (/\bPC\b/i.test(val) || /\bP\.C\.\b/i.test(val)) {
+    if (!/,\s*PC/.test(val)) {
+      errors.push('Must use ", PC" (with comma)');
+    }
+  }
   // Check for "Co" or "Company" ONLY at the end of company name
   if (/\b(Co|Company)\s*$/i.test(val)) {
     errors.push('Must use "Co." (with period) - not "Co" or "Company"');
