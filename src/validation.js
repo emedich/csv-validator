@@ -125,15 +125,16 @@ export function strategicAutoFix(row, headers, columnMap) {
       const regex = new RegExp(`\\s+\\b${s}\\b.*$`, 'i');
       val = val.replace(regex, '').trim();
     }
-    // Fix casing if all caps
-    if (val.length > 1 && val === val.toUpperCase()) val = toProperCase(val);
+    // Always capitalize (Proper Case)
+    if (val.length > 0) val = toProperCase(val);
     correctedRow[lastNameCol] = val;
   }
 
   // 3. First Name Auto-Fixes
   if (firstNameCol && row[firstNameCol]) {
     let val = String(row[firstNameCol]).trim();
-    if (val.length > 1 && val === val.toUpperCase()) val = toProperCase(val);
+    // Always capitalize (Proper Case)
+    if (val.length > 0) val = toProperCase(val);
     correctedRow[firstNameCol] = val;
   }
 
