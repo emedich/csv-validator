@@ -209,8 +209,15 @@ export function validateCompanyName(value) {
   if (/\bPC\b/i.test(val) || /\bP\.C\.\b/i.test(val)) {
     if (!/,\s*PC/.test(val)) errors.push('Must use ", PC" (with comma)');
   }
-  if (/\b(Co|Company)\s*$/i.test(val)) errors.push('Must use "Co." (with period) - not "Co" or "Company"');
-  else if (/\bCo\b/i.test(val) && !/,\s*Co\./.test(val) && !/\bCo\./.test(val)) errors.push('Must use "Co." (with period)');
+  // Only flag "Co" or "Company" if it's at the very end of the string
+  if (/\b(Co|Company)\s*$/i.test(val)) {
+    errors.push('Must use "Co." (with period) - not "Co" or "Company"');
+  }
+  // Or if it's "Co" without a period at the end of a word, but only if it's likely a standalone "Co"
+  // We check for " Co " or " Co," specifically to avoid catching "K-Co"
+  else if (/\sCo\b/i.test(val) && !/\sCo\./i.test(val) && !/,\s*Co\./i.test(val)) {
+    errors.push('Must use "Co." (with period)');
+  }
   if (/\b(Corp|Corporation)\b/i.test(val)) {
     if (!/,\s*Corp\./.test(val) && !/\bCorp\./.test(val)) errors.push('Must use "Corp." (with period)');
   }
