@@ -204,14 +204,29 @@ export function validateCompanyName(value) {
   }
   if (/\bd\.?b\.?a\.?\b/i.test(val)) errors.push('Should not contain "dba" or nicknames');
   if (/\(.*\)/.test(val)) errors.push('Should not contain parentheses or nicknames');
+  
+  // Flag special characters that might break Keap/CRM imports
+  // Allowed: Letters, Numbers, Spaces, &, -, ', ., ,
+  if (/[^a-zA-Z0-9\s&\-'\.,]/.test(val)) {
+    errors.push('Contains special characters that may break CRM import');
+  }
+
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
 export function validateFirstName(value) {
   if (!value) return null;
   const val = String(value).trim();
-  if (val.length > 0 && val[0] !== val[0].toUpperCase()) return 'Must start with a capitalized letter';
-  return null;
+  const errors = [];
+  if (val.length > 0 && val[0] !== val[0].toUpperCase()) errors.push('Must start with a capitalized letter');
+  
+  // Flag special characters in First Name
+  // Allowed: Letters, Spaces, -, ', .
+  if (/[^a-zA-Z\s\-'\.]/.test(val)) {
+    errors.push('Contains special characters that may break CRM import');
+  }
+
+  return errors.length > 0 ? errors.join('; ') : null;
 }
 
 export function validateLastName(value) {
@@ -227,6 +242,13 @@ export function validateLastName(value) {
   for (const suffix of forbiddenSuffixes) {
     if (new RegExp(`\\b${suffix}\\b`).test(val)) errors.push(`Contains forbidden suffix "${suffix}"`);
   }
+
+  // Flag special characters in Last Name
+  // Allowed: Letters, Spaces, -, ', .
+  if (/[^a-zA-Z\s\-'\.]/.test(val)) {
+    errors.push('Contains special characters that may break CRM import');
+  }
+
   return errors.length > 0 ? errors.join('; ') : null;
 }
 
