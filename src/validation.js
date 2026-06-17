@@ -253,10 +253,7 @@ export function validateLastName(value) {
 }
 
 export function validateTitle(value) {
-  if (!value) return null;
-  const val = String(value).trim();
-  const validTitles = ['CEO', 'President', 'Owner', 'GM', 'VP', 'CTO', 'COO', 'CFO'];
-  if (!validTitles.includes(val)) return `Must be exactly one of: ${validTitles.join(', ')}`;
+  // Titles are no longer flagged for specific values
   return null;
 }
 
