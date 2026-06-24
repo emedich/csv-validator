@@ -326,7 +326,27 @@ export function validateEmail(email, firstName, lastName, websiteDomain, company
     }
     return false;
   });
-  if (!nameIsValid && !isGenericPrefix) errors.push('Email name does not match first/last name');
+  if (!nameIsValid && !isGenericPrefix) {
+    // Check if the email local part matches the company name (for public providers like gmail/yahoo)
+    const publicProviders = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'aol.com', 'protonmail.com'];
+    const isPublicProvider = publicProviders.includes(domain);
+    
+    let matchesCompany = false;
+    if (isPublicProvider && companyName) {
+      const cleanCompany = String(companyName).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cleanLocal = localPart.replace(/[^a-z0-9]/g, '');
+      // Match if local part contains company name or vice versa (min 4 chars)
+      if (cleanCompany.length > 3 && (cleanLocal.includes(cleanCompany) || cleanCompany.includes(cleanLocal))) {
+        matchesCompany = true;
+      }
+    }
+
+    if (matchesCompany) {
+      errors.push('Note: Make sure there is not an email domain to use. Check Revenue and make sure this deal is large enough for Calder (>$1M Revenue)');
+    } else {
+      errors.push('Email name does not match first/last name');
+    }
+  }
   if (websiteDomain) {
     const websiteDomainLower = String(websiteDomain).trim().toLowerCase();
     const isValidDomain = validateEmailDomain(domain, websiteDomainLower, companyName);
